@@ -7,6 +7,12 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UploadController;
 
 // Lấy thông tin người dùng đã xác thực
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -48,4 +54,50 @@ Route::middleware('auth:sanctum')->prefix('brands')->group(function () {
     Route::get('/{id}', [BrandController::class, 'show']);
     Route::put('/{id}', [BrandController::class, 'update']);
     Route::delete('/{id}', [BrandController::class, 'destroy']);
+});
+
+// Quản lý giỏ hàng
+Route::middleware('auth:sanctum')->prefix('cart')->group(function () {
+    Route::get('/', [CartController::class, 'index']);
+    Route::post('/', [CartController::class, 'store']);
+    Route::put('/{id}', [CartController::class, 'update']);
+    Route::delete('/{id}', [CartController::class, 'destroy']);
+});
+
+// Quản lý đơn hàng
+Route::middleware('auth:sanctum')->prefix('orders')->group(function () {
+    Route::get('/', [OrderController::class, 'index']);
+    Route::post('/', [OrderController::class, 'store']);
+    Route::get('/{id}', [OrderController::class, 'show']);
+    Route::put('/{id}', [OrderController::class, 'update']);
+    Route::delete('/{id}', [OrderController::class, 'destroy']);
+});
+
+// Quản lý danh sách yêu thích
+Route::middleware('auth:sanctum')->prefix('wishlist')->group(function () {
+    Route::get('/', [WishlistController::class, 'index']);
+    Route::post('/', [WishlistController::class, 'store']);
+    Route::delete('/{id}', [WishlistController::class, 'destroy']);
+});
+
+// Quản lý thông báo
+Route::middleware('auth:sanctum')->prefix('notifications')->group(function () {
+    Route::get('/', [NotificationController::class, 'index']);
+    Route::post('/', [NotificationController::class, 'store']);
+    Route::put('/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+});
+
+// Quản lý báo cáo & phân tích
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/reports/revenue', [ReportController::class, 'totalRevenue']);
+    Route::get('/reports/orders', [ReportController::class, 'totalOrders']);
+    Route::get('/reports/best-selling-products', [ReportController::class, 'bestSellingProducts']);
+    Route::get('/reports/monthly-revenue', [ReportController::class, 'monthlyRevenue']);
+});
+
+// Upload file
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/upload', [UploadController::class, 'uploadFile']);
+    Route::get('/uploads', [UploadController::class, 'listFiles']);
+    Route::delete('/uploads/{id}', [UploadController::class, 'deleteFile']);
 });

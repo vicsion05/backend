@@ -7,15 +7,17 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('reviews', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->integer('rating'); // 1 đến 5 sao
-            $table->text('comment')->nullable();
+            $table->string('shipping_address');
+            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
+            $table->enum('payment_method', ['cod', 'bank', 'momo', 'vnpay'])->default('cod');
+            $table->decimal('total_price', 10, 2);
             $table->timestamps();
         });
     }
+
 
     public function down()
     {

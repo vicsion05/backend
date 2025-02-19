@@ -11,7 +11,8 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'total_price', 'status'];
+    protected $fillable = 
+    ['user_id', 'shipping_address', 'status', 'payment_method', 'total_price'];
 
     /**
      * Quan hệ với User (1-N)

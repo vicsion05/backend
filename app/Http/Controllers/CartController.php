@@ -3,100 +3,61 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Lấy danh sách giỏ hàng của người dùng
     public function index()
     {
-        //
+        $cart = Cart::where('user_id', Auth::id())->with('product')->get();
+        return response()->json($cart);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Thêm sản phẩm vào giỏ hàng
     public function store(Request $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Cart $cart)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Cart $cart)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Cart $cart)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Cart $cart)
-    {
-        //
-    }
-
-    /**
-     * Add a product to the cart.
-     */
-    public function addToCart(Request $request) {
-        $validated = $request->validate([
+        $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1'
         ]);
-        
-        $cartItem = Cart::updateOrCreate(
-            ['user_id' => auth()->id(), 'product_id' => $validated['product_id']],
-            ['quantity' => DB::raw('quantity + ' . $validated['quantity'])]
+
+        $cart = Cart::updateOrCreate(
+            ['user_id' => Auth::id(), 'product_id' => $request->product_id],
+            ['quantity' => $request->quantity]
         );
-        
-        return response()->json($cartItem, 200);
+
+        return response()->json(['message' => 'Sản phẩm đã được thêm vào giỏ hàng', 'cart' => $cart]);
     }
 
-    /**
-     * View the cart items of the authenticated user.
-     */
-    public function viewCart() {
-        $cartItems = Cart::with('product')->where('user_id', auth()->id())->get();
-        return response()->json($cartItems, 200);
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
+    public function update(Request $request, $id)
+    {
+        $cart = Cart::where('user_id', Auth::id())->where('id', $id)->first();
+
+        if (!$cart) {
+            return response()->json(['message' => 'Sản phẩm không tồn tại trong giỏ hàng'], 404);
+        }
+
+        $request->validate(['quantity' => 'required|integer|min:1']);
+        $cart->update(['quantity' => $request->quantity]);
+
+        return response()->json(['message' => 'Cập nhật giỏ hàng thành công', 'cart' => $cart]);
     }
 
-    /**
-     * Remove an item from the cart.
-     */
-    public function removeFromCart($id) {
-        $cartItem = Cart::where('user_id', auth()->id())->find($id);
-        if (!$cartItem) return response()->json(['message' => 'Item not found'], 404);
-        
-        $cartItem->delete();
-        return response()->json(['message' => 'Item removed'], 200);
+    // Xóa sản phẩm khỏi giỏ hàng
+    public function destroy($id)
+    {
+        $cart = Cart::where('user_id', Auth::id())->where('id', $id)->first();
+
+        if (!$cart) {
+            return response()->json(['message' => 'Sản phẩm không tồn tại trong giỏ hàng'], 404);
+        }
+
+        $cart->delete();
+
+        return response()->json(['message' => 'Xóa sản phẩm khỏi giỏ hàng thành công']);
     }
 }
